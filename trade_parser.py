@@ -6,9 +6,8 @@ openai.api_key = OPENAI_API_KEY
 async def extract_trade_details(message_text):
     """Extract trade details from a message using OpenAI."""
     prompt = f"""
-    Extract the trade details from this message:
+    Parse this message into structured trade details:
     "{message_text}"
-    
     Return in JSON format:
     {{
         "trade_type": "BUY/SELL",
@@ -20,6 +19,6 @@ async def extract_trade_details(message_text):
     """
     response = openai.ChatCompletion.create(
         model="gpt-4",
-        messages=[{"role": "system", "content": prompt}]
+        messages=[{"role": "user", "content": prompt}]
     )
-    return eval(response["choices"][0]["message"]["content"])
+    return eval(response.choices[0].message.content)
