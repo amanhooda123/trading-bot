@@ -1,0 +1,6 @@
+telethon
+openai
+kiteconnect
+fastapi
+uvicorn
+redis
