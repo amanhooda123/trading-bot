@@ -2,19 +2,20 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 import asyncio
 from telegram_listener import start_telegram_bot
+from config import ZERODHA_ACCESS_TOKEN
 
-print("Starting FastAPI application...")  # Debug print
+print("Starting FastAPI application...")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Lifespan started...")  # Debug print
+    print("Lifespan started...")
+    print(f"Using Zerodha Access Token: {ZERODHA_ACCESS_TOKEN}")  # Debugging
     asyncio.create_task(start_telegram_bot())
-    yield  # Control will pass to the application here
-    print("Lifespan ended...")  # Debug print
+    yield
+    print("Lifespan ended...")
 
 app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 def home():
-    print("Handling root endpoint request...")  # Debug print
-    return {"message": "Trading bot is running!"}
+    return {"message": "Trading bot is running with Zerodha API integration!"}
