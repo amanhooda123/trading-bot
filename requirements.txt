@@ -1,6 +1,8 @@
+fastapi
+uvicorn
 telethon
 openai
 kiteconnect
-fastapi
-uvicorn
+python-dotenv
+requests
 redis
