@@ -25,7 +25,7 @@ ZERODHA_API_KEY = get_env_variable("ZERODHA_API_KEY", required=True)
 ZERODHA_ACCESS_TOKEN = get_env_variable("ZERODHA_ACCESS_TOKEN")
 
 # Ensure Zerodha Access Token is Available
-if ZERODHA_ACCESS_TOKEN is None:
+if ZERODHA_ACCESS_TOKEN == "to_be_generated":
     raise ValueError("ZERODHA_ACCESS_TOKEN is missing! Run `zerodha_token_refresh.py` to generate it.")
 
 print("✅ Config loaded successfully!")  # Debugging: Print if everything is loaded correctly
