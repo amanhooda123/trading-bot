@@ -4,21 +4,56 @@ from config import ZERODHA_API_KEY, ZERODHA_ACCESS_TOKEN
 kite = KiteConnect(api_key=ZERODHA_API_KEY)
 kite.set_access_token(ZERODHA_ACCESS_TOKEN)
 
+# Track if a trade is active
+active_trade = None
+
 def execute_trade(trade_details):
-    """Execute a trade via Zerodha API."""
+    global active_trade
+    
+    if active_trade:
+        print("⚠️ Already in a trade. Waiting for exit before placing a new order.")
+        return
+
     try:
-        order = kite.place_order(
-            variety=kite.VARIETY_REGULAR,
+        order_id = kite.place_order(
+            variety="regular",
             exchange="NSE",
-            tradingsymbol=trade_details["symbol"],
-            transaction_type=kite.TRANSACTION_TYPE_BUY if trade_details["trade_type"] == "BUY" else kite.TRANSACTION_TYPE_SELL,
-            quantity=1,  # Adjust as needed
-            order_type=kite.ORDER_TYPE_LIMIT,
-            product=kite.PRODUCT_MIS,
-            price=float(trade_details["entry_price"]),
-            trigger_price=float(trade_details["stop_loss"]),
-            validity=kite.VALIDITY_DAY
+            tradingsymbol=trade_details["stock"],
+            transaction_type=trade_details["action"],
+            quantity=1,
+            order_type="LIMIT",
+            product="CNC",
+            price=trade_details["price"]
         )
-        print(f"Trade executed successfully: {order}")
+        print(f"✅ Order Placed: {order_id}")
+
+        # Store active trade details
+        active_trade = {
+            "stock": trade_details["stock"],
+            "order_id": order_id
+        }
     except Exception as e:
-        print(f"Trade execution failed: {e}")
+        print(f"❌ Error Placing Order: {e}")
+
+def exit_trade():
+    global active_trade
+    
+    if not active_trade:
+        print("⚠️ No active trade to exit.")
+        return
+
+    try:
+        exit_order_id = kite.place_order(
+            variety="regular",
+            exchange="NSE",
+            tradingsymbol=active_trade["stock"],
+            transaction_type="SELL",
+            quantity=1,
+            order_type="MARKET",
+            product="CNC"
+        )
+        print(f"✅ Trade Exited: {exit_order_id}")
+        active_trade = None  # Clear active trade after exit
+
+    except Exception as e:
+        print(f"❌ Error Exiting Trade: {e}")
