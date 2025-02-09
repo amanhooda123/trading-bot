@@ -3,7 +3,7 @@ from trade_parser import parse_trade_signal
 from trade_executor import execute_trade, exit_trade
 from config import TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_PHONE_NUMBER, TELEGRAM_GROUP_ID
 
-client = TelegramClient("session_name", TELEGRAM_API_ID, TELEGRAM_API_HASH)
+client = TelegramClient("session_render", TELEGRAM_API_ID, TELEGRAM_API_HASH)
 
 @client.on(events.NewMessage(chats=TELEGRAM_GROUP_ID))
 async def handle_message(event):
