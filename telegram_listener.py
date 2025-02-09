@@ -1,5 +1,5 @@
 from telethon import TelegramClient, events
-from trade_parser import extract_trade_details
+from trade_parser import parse_trade_signal
 from trade_executor import execute_trade, exit_trade
 from config import TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_PHONE_NUMBER, TELEGRAM_GROUP_ID
 
@@ -19,7 +19,7 @@ async def handle_message(event):
         return  # Stop processing further
 
     try:
-        trade_details = await extract_trade_details(message_text)  # Extract trade details
+        trade_details = await parse_trade_signal(message_text)  # Extract trade details
         if trade_details:
             print(f"✅ Extracted trade details: {trade_details}")
             execute_trade(trade_details)  # Execute trade

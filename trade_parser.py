@@ -8,7 +8,7 @@ def parse_trade_signal(message):
     """
     Uses OpenAI's NLP model to parse and extract trade signals from Telegram messages.
     """
-    prompt = """
+    prompt = f"""
     You are an AI trade execution assistant that processes trade signals from a Telegram trading group. Your task is to extract **ONLY option trading signals** and execute them based on clear rules. Ignore irrelevant messages.
 
     ### **Rules for Execution:**
@@ -48,13 +48,13 @@ def parse_trade_signal(message):
     **Extracted Trade Details:**
     """
 
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt.format(message=message),
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",  # Updated to GPT-3.5 Turbo
+        messages=[{"role": "user", "content": prompt}],
         max_tokens=100
     )
 
-    trade_details = response["choices"][0]["text"].strip()
+    trade_details = response["choices"][0]["message"]["content"].strip()
 
     if "BUY" in trade_details or "SELL" in trade_details:
         return trade_details
