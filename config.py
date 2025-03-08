@@ -1,31 +1,31 @@
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
 
-# Load environment variables from .env
+# Load environment variables from .env file
 load_dotenv()
 
-# Helper function to check for missing environment variables
-def get_env_variable(var_name, default=None, required=False):
-    value = os.getenv(var_name, default)
-    if required and value is None:
-        raise ValueError(f"Missing required environment variable: {var_name}")
-    return value
-
 # Telegram API Credentials
-TELEGRAM_API_ID = get_env_variable("TELEGRAM_API_ID", required=True)
-TELEGRAM_API_HASH = get_env_variable("TELEGRAM_API_HASH", required=True)
-TELEGRAM_PHONE_NUMBER = get_env_variable("TELEGRAM_PHONE_NUMBER", required=True)
-TELEGRAM_GROUP_ID = int(get_env_variable("TELEGRAM_GROUP_ID", "-1001234567890"))  # Default fallback
+TELEGRAM_API_ID = os.getenv("TELEGRAM_API_ID")
+TELEGRAM_API_HASH = os.getenv("TELEGRAM_API_HASH")
+TELEGRAM_PHONE = os.getenv("TELEGRAM_PHONE")
+# Set your target group ID (example: 6658679157)
+TELEGRAM_GROUP_ID = int(os.getenv("TELEGRAM_GROUP_ID", "6658679157"))
 
 # OpenAI API Key
-OPENAI_API_KEY = get_env_variable("OPENAI_API_KEY", required=True)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-# Zerodha API Credentials
-ZERODHA_API_KEY = get_env_variable("ZERODHA_API_KEY", required=True)
-ZERODHA_ACCESS_TOKEN = get_env_variable("ZERODHA_ACCESS_TOKEN")
+# Dhan API Credentials
+DHAN_CLIENT_ID = os.getenv("DHAN_CLIENT_ID")
+DHAN_ACCESS_TOKEN = os.getenv("DHAN_ACCESS_TOKEN")
+DHAN_BASE_URL = "https://api.dhan.co/v2"
 
-# Ensure Zerodha Access Token is Available
-if ZERODHA_ACCESS_TOKEN == "to_be_generated":
-    raise ValueError("ZERODHA_ACCESS_TOKEN is missing! Run `zerodha_token_refresh.py` to generate it.")
+# CSV file for instrument lookup
+SECURITY_CSV_FILE = "api-scrip-master.csv"
 
-print("✅ Config loaded successfully!")  # Debugging: Print if everything is loaded correctly
+# Validate required variables
+required_vars = [
+    TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_PHONE, str(TELEGRAM_GROUP_ID),
+    OPENAI_API_KEY, DHAN_CLIENT_ID, DHAN_ACCESS_TOKEN, SECURITY_CSV_FILE
+]
+if any(var is None for var in required_vars):
+    raise ValueError("🚨 Missing one or more required configuration values!")

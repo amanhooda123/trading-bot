@@ -1,36 +1,42 @@
 from telethon import TelegramClient, events
+import logging
+import asyncio
+from config import TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_PHONE, TELEGRAM_GROUP_ID
 from trade_parser import parse_trade_signal
-from trade_executor import execute_trade, exit_trade
-from config import TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_PHONE_NUMBER, TELEGRAM_GROUP_ID
+from trade_executor import execute_trade
 
-client = TelegramClient("session_render", TELEGRAM_API_ID, TELEGRAM_API_HASH)
+# Enable logging
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
 
-@client.on(events.NewMessage(chats=TELEGRAM_GROUP_ID))
-async def handle_message(event):
-    """Handle new messages from the Telegram group."""
-    message_text = event.message.message.strip()
-    print(f"📩 New message received: {message_text}")
-    
-    # If the message contains an "Exit" command, exit the active trade immediately
-    exit_keywords = ["exit", "book profit", "close trade", "stop trade"]
-    if any(exit_word in message_text.lower() for exit_word in exit_keywords):
-        print("⚠️ Exit signal detected! Exiting the trade immediately.")
-        exit_trade()
-        return  # Stop processing further
+# Initialize Telegram client (user session)
+client = TelegramClient("user_session", TELEGRAM_API_ID, TELEGRAM_API_HASH)
 
-    try:
-        trade_details = await parse_trade_signal(message_text)  # Extract trade details
+async def start_telegram_listener():
+    """Logs in as a user and listens to messages from a specific Telegram group."""
+    await client.start(TELEGRAM_PHONE)
+    print(f"✅ Telegram user session started. Listening for messages in group: {TELEGRAM_GROUP_ID}")
+
+    @client.on(events.NewMessage(chats=TELEGRAM_GROUP_ID))
+    async def group_message_handler(event):
+        """Handles messages from the Telegram group."""
+        sender = await event.get_sender()
+        message_text = event.raw_text
+        print(f"📩 NEW MESSAGE FROM {sender.username or sender.id}: {message_text}")
+
+        trade_details = parse_trade_signal(message_text)
+
         if trade_details:
-            print(f"✅ Extracted trade details: {trade_details}")
-            execute_trade(trade_details)  # Execute trade
+            if "security_id" not in trade_details:
+                print(f"⚠️ Security ID missing for trade: {trade_details}")
+                return
+
+            print(f"✅ Parsed Trade Details: {trade_details}")
+            trade_response = execute_trade(trade_details)
+            print(f"🚀 Trade Execution Response: {trade_response}")
         else:
-            print("ℹ️ No valid trade signal detected. Ignoring the message.")
+            print("⚠️ No valid trade detected in message.")
 
-    except Exception as e:
-        print(f"❌ Error handling message: {e}")
-
-async def start_telegram_bot():
-    """Start the Telegram bot."""
-    await client.start(TELEGRAM_PHONE_NUMBER)
-    print("✅ Telegram bot started successfully!")
     await client.run_until_disconnected()
+
+if __name__ == "__main__":
+    asyncio.run(start_telegram_listener())

@@ -1,21 +1,23 @@
 from fastapi import FastAPI
-from contextlib import asynccontextmanager
+import uvicorn
 import asyncio
-from telegram_listener import start_telegram_bot
-from config import ZERODHA_ACCESS_TOKEN
+from telegram_listener import start_telegram_listener
 
-print("Starting FastAPI application...")
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    print("Lifespan started...")
-    print(f"Using Zerodha Access Token: {ZERODHA_ACCESS_TOKEN}")  # Debugging
-    asyncio.create_task(start_telegram_bot())
-    yield
-    print("Lifespan ended...")
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 @app.get("/")
-def home():
-    return {"message": "Trading bot is running with Zerodha API integration!"}
+def read_root():
+    return {"message": "Option Trading Bot is running!"}
+
+@app.get("/status")
+def check_status():
+    return {"status": "Running"}
+
+async def run_services():
+    """Runs Telegram listener alongside FastAPI."""
+    telegram_task = asyncio.create_task(start_telegram_listener())  # Start Telegram Listener
+    await telegram_task  # Ensure it doesn't stop prematurely
+
+if __name__ == "__main__":
+    asyncio.run(run_services())  # Run Telegram listener properly
+    uvicorn.run(app, host="0.0.0.0", port=8000)
